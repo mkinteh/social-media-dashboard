@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+</head>
+
+<body>
+
+
+    <nav class="navbar sticky-top navbar-expand-lg"
+        style="background: linear-gradient(90deg, #4B0082, #6A0DAD); color: white;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-graph-up me-2"></i>
+                Social Media Analysis
+            </a>
+            <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon" style="color: white; filter: invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#" style="color: white;">Home</a>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" style="color: white;">
+                            Charts
+                        </a>
+                        <ul class="dropdown-menu" style="background-color: #4B0082;">
+                            <li><a class="dropdown-item" href="#" onclick="showChart('Sentiment Distribution')"
+                                    style="color:white;">Sentiment Distribution</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showChart('Platform Usage')"
+                                    style="color: white;">Platform Usage</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showChart('Engagement Over Time')"
+                                    style="color: white;">Engagement Over Time</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showChart('Total Posts per Platform')"
+                                    style="color: white;">Total Posts per Platform</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showChart('Engagement Metrics')"
+                                    style="color: white;">Engagement Metrics</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showChart('Likes vs Retweets')"
+                                    style="color: white;">Likes vs Retweets</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showChart('Engagement per Platform')"
+                                    style="color: white;">Engagement per Platform</a></li>
+                        </ul>
+                    </li>
+
+                </ul>
+                <form class="d-flex" role="search">
+                    <input oninput="searchMetrics()" id="searchInput" class="form-control me-2" type="search"
+                        placeholder="Search Metrics..." aria-label="Search"
+                        style="background-color: white; border: none; border-radius: 5px;">
+                </form>
+
+
+                <li class="nav-item">
+                    <button onclick="logout()" class="btn btn-danger">
+
+                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                    </button>
+                </li>
+            </div>
+        </div>
+    </nav>
+
+    <h1 class="mt-5">Social Media Dashboard</h1>
+
+
+
+
+    <div id="loader-overlay" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8); /* Darker overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* Ensure it's on top */
+">
+        <div style="text-align: center; font-size: 24px; color: #ffffff;">
+            <div style="
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 6px solid rgba(255, 255, 255, 0.2);
+            border-top: 6px solid #6c5ce7;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        "></div>
+            <br />
+            <span style="
+            font-weight: bold;
+            font-size: 20px;
+            color: #ffffff;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        ">Loading...</span>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="metrics">
+        <div class="metric" id="totalPosts">
+            <i class="bi bi-file-earmark-text" style="font-size: 30px; color: #6c5ce7;"></i>
+            Total Posts:
+        </div>
+        <div class="metric" id="totalLikes">
+            <i class="bi bi-heart" style="font-size: 30px; color: #FF6347;"></i>
+            Total Likes:
+        </div>
+        <div class="metric" id="totalRetweets">
+            <i class="bi bi-arrow-repeat" style="font-size: 30px; color: #36A2EB;"></i>
+            Total Retweets:
+        </div>
+    </div>
+
+
+    <div class="chart-container position-relative">
+        <h3>Sentiment Distribution</h3>
+
+        <div class="position-absolute top-0 mx-1 mt-2 end-0">
+            <button type="button" class="btn " data-bs-toggle="tooltip" data-bs-placement="top"
+                data-bs-title="This chart shows the distribution of sentiment across your social media posts and messages. Positive, negative, and neutral sentiments are displayed to help you understand audience reactions.">
+                <i class="bi bi-info-circle"></i>
+            </button>
+        </div>
+
+
+        <div class="row g-3 mb-3  align-items-end">
+            <!-- Time Range Filter -->
+            <div class="col-md-3">
+                <label for="timeRangeFilter" class="form-label">Time Range</label>
+                <select class="form-select" id="timeRangeFilter" onchange="applyFilters('sentiment')">
+                    <option value="all" selected>All Time</option>
+                    <option value="7days">Last 7 Days</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="90days">Last 90 Days</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+
+                <div id="customDateContainer" class="mt-2" style="display: none;">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="date" class="form-control startdate" id="startDate"
+                                onchange="applyFilters('sentiment')">
+                        </div>
+                        <div class="col-6">
+                            <input type="date" class="form-control enddate" id="endDate"
+                                onchange="applyFilters('sentiment')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Filter -->
+            <div class="col-md-3">
+                <label for="platformFilter" class="form-label">Platform</label>
+                <select class="form-select platformFiltersall" id="platformFilter" onchange="applyFilters('sentiment')">
+                    <option value="all" selected>All Platforms</option>
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Chart Type Filter -->
+            <div class="col-md-3">
+                <label for="chartTypeFilter" class="form-label">Chart Type</label>
+                <select class="form-select" id="chartTypeFilter" onchange="applyChartType('sentiment')">
+                    <option value="default" selected>Default</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="pie">Pie Chart</option>
+                </select>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="col-md-3 ">
+                <button class="btn btn-secondary w-100" onclick="resetFilters('sentiment')">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Filters
+                </button>
+
+            </div>
+        </div>
+        <canvas class="sentimentchartclass" id="sentimentChart"></canvas>
+    </div>
+
+    <div class="chart-container position-relative">
+        <h3>Platform Usage</h3>
+
+                <div class="position-absolute top-0 mx-1 mt-2 end-0">
+
+            <button type="button" class="btn" data-bs-toggle="tooltip" data-bs-placement="top"
+                data-bs-title="Platform Usage displays which social media platforms are being used most frequently. This helps identify where your audience is most active and where you have the strongest presence.">
+                <i class="bi bi-info-circle"></i>
+            </button>
+        </div>
+
+
+        <div class="row g-3 mb-3  align-items-end">
+            <!-- Time Range Filter -->
+            <div class="col-md-3">
+                <label for="timeRangeFilter" class="form-label">Time Range</label>
+                <select class="form-select" id="timeRangeFilter2" onchange="applyFilters('platformusage')">
+                    <option value="all" selected>All Time</option>
+                    <option value="7days">Last 7 Days</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="90days">Last 90 Days</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+
+                <div id="customDateContainer2" class="mt-2" style="display: none;">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="date" class="form-control startdate" id="startDate2"
+                                onchange="applyFilters('platformusage')">
+                        </div>
+                        <div class="col-6">
+                            <input type="date" class="form-control enddate" id="endDate2"
+                                onchange="applyFilters('platformusage')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Filter -->
+            <div class="col-md-3">
+                <label for="platformFilter" class="form-label">Platform</label>
+                <select class="form-select platformFiltersall" id="platformFilter2"
+                    onchange="applyFilters('platformusage')">
+                    <option value="all" selected>All Platforms</option>
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Chart Type Filter -->
+            <div class="col-md-3">
+                <label for="chartTypeFilter" class="form-label">Chart Type</label>
+                <select class="form-select" id="chartTypeFilter2" onchange="applyChartType('platformusage')">
+                    <option value="default" selected>Default</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="pie">Pie Chart</option>
+                </select>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="col-md-3 ">
+                <button class="btn btn-secondary w-100" onclick="resetFilters('platformusage')">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Filters
+                </button>
+
+            </div>
+        </div>
+        <canvas id="platformChart"></canvas>
+    </div>
+
+    <div class="chart-container position-relative">
+        <h3>Engagement Over Time</h3>
+
+                <div class="position-absolute top-0 mx-1 mt-2 end-0">
+
+            <button type="button" class="btn " data-bs-toggle="tooltip" data-bs-placement="top"
+                data-bs-title="Engagement Over Time tracks how user interaction with your content changes across different time periods. This shows trends in audience engagement and helps identify successful content strategies.">
+                <i class="bi bi-info-circle"></i>
+            </button>
+        </div>
+
+        <div class="row g-3 mb-3  align-items-end">
+            <!-- Time Range Filter -->
+            <div class="col-md-3">
+                <label for="timeRangeFilter" class="form-label">Time Range</label>
+                <select class="form-select" id="timeRangeFilter3" onchange="applyFilters('engagement')">
+                    <option value="all" selected>All Time</option>
+                    <option value="7days">Last 7 Days</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="90days">Last 90 Days</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+
+                <div id="customDateContainer3" class="mt-2" style="display: none;">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="date" class="form-control startdate" id="startDate3"
+                                onchange="applyFilters('engagement')">
+                        </div>
+                        <div class="col-6">
+                            <input type="date" class="form-control enddate" id="endDate3"
+                                onchange="applyFilters('engagement')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Filter -->
+            <div class="col-md-3">
+                <label for="platformFilter" class="form-label">Platform</label>
+                <select class="form-select platformFiltersall" id="platformFilter3"
+                    onchange="applyFilters('engagement')">
+                    <option value="all" selected>All Platforms</option>
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Chart Type Filter -->
+            <div class="col-md-3">
+                <label for="chartTypeFilter" class="form-label">Chart Type</label>
+                <select class="form-select" id="chartTypeFilter3" onchange="applyChartType('engagement')">
+                    <option value="default" selected>Default</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="pie">Pie Chart</option>
+                </select>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="col-md-3 ">
+                <button class="btn btn-secondary w-100" onclick="resetFilters('engagement')">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Filters
+                </button>
+
+            </div>
+        </div>
+        <canvas id="engagementChart"></canvas>
+    </div>
+
+    <div class="chart-container position-relative">
+        <h3>Total Posts per Platform</h3>
+
+                <div class="position-absolute top-0 mx-1 mt-2 end-0">
+
+            <button type="button" class="btn " data-bs-toggle="tooltip" data-bs-placement="top"
+                data-bs-title="Total Posts per Platform shows the volume of content published across different social media channels. This helps track content distribution and identify potential gaps in your strategy.">
+                <i class="bi bi-info-circle"></i>
+            </button>
+        </div>
+        <div class="row g-3 mb-3  align-items-end">
+            <!-- Time Range Filter -->
+            <div class="col-md-3">
+                <label for="timeRangeFilter" class="form-label">Time Range</label>
+                <select class="form-select" id="timeRangeFilter4" onchange="applyFilters('platformPostsChart')">
+                    <option value="all" selected>All Time</option>
+                    <option value="7days">Last 7 Days</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="90days">Last 90 Days</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+
+                <div id="customDateContainer4" class="mt-2" style="display: none;">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="date" class="form-control startdate" id="startDate4"
+                                onchange="applyFilters('platformPostsChart')">
+                        </div>
+                        <div class="col-6">
+                            <input type="date" class="form-control enddate" id="endDate4"
+                                onchange="applyFilters('platformPostsChart')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Filter -->
+            <div class="col-md-3">
+                <label for="platformFilter" class="form-label">Platform</label>
+                <select class="form-select platformFiltersall" id="platformFilter4"
+                    onchange="applyFilters('platformPostsChart')">
+                    <option value="all" selected>All Platforms</option>
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Chart Type Filter -->
+            <div class="col-md-3">
+                <label for="chartTypeFilter" class="form-label">Chart Type</label>
+                <select class="form-select" id="chartTypeFilter4" onchange="applyChartType('platformPostsChart')">
+                    <option value="default" selected>Default</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="pie">Pie Chart</option>
+                </select>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="col-md-3 ">
+                <button class="btn btn-secondary w-100" onclick="resetFilters('platformPostsChart')">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Filters
+                </button>
+
+            </div>
+        </div>
+
+        <canvas id="platformPostsChart"></canvas>
+    </div>
+
+
+
+    <div class="chart-container position-relative">
+        <h3>Engagement Metrics</h3>
+                <div class="position-absolute top-0 mx-1 mt-2 end-0">
+
+            <button type="button" class="btn " data-bs-toggle="tooltip" data-bs-placement="top"
+                data-bs-title="Engagement Metrics provides a detailed breakdown of different types of engagement (likes, comments, shares, clicks) across platforms. This helps identify which types of engagement are most common on each platform.">
+                <i class="bi bi-info-circle"></i>
+            </button>
+        </div>
+        <div class="row g-3 mb-3  align-items-end">
+            <!-- Time Range Filter -->
+            <div class="col-md-3">
+                <label for="timeRangeFilter" class="form-label">Time Range</label>
+                <select class="form-select" id="timeRangeFilter5" onchange="applyFilters('engagementRadarChart')">
+                    <option value="all" selected>All Time</option>
+                    <option value="7days">Last 7 Days</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="90days">Last 90 Days</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+
+                <div id="customDateContainer5" class="mt-2" style="display: none;">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="date" class="form-control startdate" id="startDate5"
+                                onchange="applyFilters('engagementRadarChart')">
+                        </div>
+                        <div class="col-6">
+                            <input type="date" class="form-control enddate" id="endDate5"
+                                onchange="applyFilters('engagementRadarChart')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Filter -->
+            <div class="col-md-3">
+                <label for="platformFilter" class="form-label">Platform</label>
+                <select class="form-select platformFiltersall" id="platformFilter5"
+                    onchange="applyFilters('engagementRadarChart')">
+                    <option value="all" selected>All Platforms</option>
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Chart Type Filter -->
+            <div class="col-md-3">
+                <label for="chartTypeFilter" class="form-label">Chart Type</label>
+                <select class="form-select" id="chartTypeFilter5" onchange="applyChartType('engagementRadarChart')">
+                    <option value="default" selected>Default</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="pie">Pie Chart</option>
+                </select>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="col-md-3 ">
+                <button class="btn btn-secondary w-100" onclick="resetFilters('engagementRadarChart')">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Filters
+                </button>
+
+            </div>
+        </div>
+        <canvas id="engagementRadarChart"></canvas>
+    </div>
+
+    <div class="chart-container position-relative">
+        <h3>Likes vs Retweets</h3>
+
+                <div class="position-absolute top-0 mx-1 mt-2 end-0">
+
+            <button type="button" class="btn " data-bs-toggle="tooltip" data-bs-placement="top"
+                data-bs-title="Likes vs Retweets compares these two forms of engagement on Twitter to help understand how users prefer to interact with your content. This can guide content creation for better audience response.">
+                <i class="bi bi-info-circle"></i>
+            </button>
+        </div>
+
+        <div class="row g-3 mb-3  align-items-end">
+            <!-- Time Range Filter -->
+            <div class="col-md-3">
+                <label for="timeRangeFilter" class="form-label">Time Range</label>
+                <select class="form-select" id="timeRangeFilter6" onchange="applyFilters('likesVsRetweetsChart')">
+                    <option value="all" selected>All Time</option>
+                    <option value="7days">Last 7 Days</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="90days">Last 90 Days</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+
+                <div id="customDateContainer6" class="mt-2" style="display: none;">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="date" class="form-control startdate" id="startDate6"
+                                onchange="applyFilters('likesVsRetweetsChart')">
+                        </div>
+                        <div class="col-6">
+                            <input type="date" class="form-control enddate" id="endDate6"
+                                onchange="applyFilters('likesVsRetweetsChart')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Filter -->
+            <div class="col-md-3">
+                <label for="platformFilter" class="form-label">Platform</label>
+                <select class="form-select platformFiltersall" id="platformFilter6"
+                    onchange="applyFilters('likesVsRetweetsChart')">
+                    <option value="all" selected>All Platforms</option>
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Chart Type Filter -->
+            <div class="col-md-3">
+                <label for="chartTypeFilter" class="form-label">Chart Type</label>
+                <select class="form-select" id="chartTypeFilter6" onchange="applyChartType('likesVsRetweetsChart')">
+                    <option value="default" selected>Default</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="pie">Pie Chart</option>
+                </select>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="col-md-3 ">
+                <button class="btn btn-secondary w-100" onclick="resetFilters('likesVsRetweetsChart')">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Filters
+                </button>
+
+            </div>
+        </div>
+        <canvas id="likesVsRetweetsChart"></canvas>
+    </div>
+
+    <div class="chart-container position-relative">
+        <h3>Engagement per Platform</h3>
+                <div class="position-absolute top-0 mx-1 mt-2 end-0">
+
+            <button type="button" class="btn " data-bs-toggle="tooltip" data-bs-placement="top"
+                data-bs-title="Engagement per Platform compares total engagement metrics across different social media channels. This helps identify which platforms generate the highest audience interaction.">
+                <i class="bi bi-info-circle"></i>
+            </button>
+        </div>
+        <div class="row g-3 mb-3  align-items-end">
+            <!-- Time Range Filter -->
+            <div class="col-md-3">
+                <label for="timeRangeFilter" class="form-label">Time Range</label>
+                <select class="form-select" id="timeRangeFilter7" onchange="applyFilters('engagementPlatformChart')">
+                    <option value="all" selected>All Time</option>
+                    <option value="7days">Last 7 Days</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="90days">Last 90 Days</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+
+                <div id="customDateContainer7" class="mt-2" style="display: none;">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="date" class="form-control startdate" id="startDate7"
+                                onchange="applyFilters('engagementPlatformChart')">
+                        </div>
+                        <div class="col-6">
+                            <input type="date" class="form-control enddate" id="endDate7"
+                                onchange="applyFilters('engagementPlatformChart')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Filter -->
+            <div class="col-md-3">
+                <label for="platformFilter" class="form-label">Platform</label>
+                <select class="form-select platformFiltersall" id="platformFilter7"
+                    onchange="applyFilters('engagementPlatformChart')">
+                    <option value="all" selected>All Platforms</option>
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Chart Type Filter -->
+            <div class="col-md-3">
+                <label for="chartTypeFilter" class="form-label">Chart Type</label>
+                <select class="form-select" id="chartTypeFilter7" onchange="applyChartType('engagementPlatformChart')">
+                    <option value="default" selected>Default</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="pie">Pie Chart</option>
+                </select>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="col-md-3 ">
+                <button class="btn btn-secondary w-100" onclick="resetFilters('engagementPlatformChart')">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Filters
+                </button>
+
+            </div>
+        </div>
+        <canvas id="engagementPlatformChart"></canvas>
+    </div>
+
+
+
+
+    <script>
+
+        // Global variables
+        let allData = [];
+        let filteredData = [];
+        let chartInstances = {};
+        let uniquePlatforms = [];
+
+        // Initialize filters and charts
+        function initializeFilters() {
+            // Show custom date inputs when Custom Range is selected
+            document.getElementById('timeRangeFilter').addEventListener('change', function () {
+                const customDateContainer = document.getElementById('customDateContainer');
+                customDateContainer.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+
+
+            document.getElementById('timeRangeFilter2').addEventListener('change', function () {
+                const customDateContainer = document.getElementById('customDateContainer2');
+                customDateContainer.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+            document.getElementById('timeRangeFilter3').addEventListener('change', function () {
+                const customDateContainer = document.getElementById('customDateContainer3');
+                customDateContainer.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+
+            document.getElementById('timeRangeFilter4').addEventListener('change', function () {
+                const customDateContainer = document.getElementById('customDateContainer4');
+                customDateContainer.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+            document.getElementById('timeRangeFilter5').addEventListener('change', function () {
+                const customDateContainer = document.getElementById('customDateContainer5');
+                customDateContainer.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+            document.getElementById('timeRangeFilter6').addEventListener('change', function () {
+                const customDateContainer = document.getElementById('customDateContainer6');
+                customDateContainer.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+            document.getElementById('timeRangeFilter7').addEventListener('change', function () {
+                const customDateContainer = document.getElementById('customDateContainer7');
+                customDateContainer.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+
+            // Set default dates for custom range
+            // const today = new Date();
+            // const thirtyDaysAgo = new Date(today);
+            // thirtyDaysAgo.setDate(today.getDate() - 30);
+
+            // const startDateInputs = document.getElementsByClassName('startdate');
+            // const endDateInputs = document.getElementsByClassName('enddate');
+
+            // for (let input of startDateInputs) {
+            //     input.valueAsDate = thirtyDaysAgo;
+            // }
+
+            // for (let input of endDateInputs) {
+            //     input.valueAsDate = today;
+            // }
+
+        }
+
+        // Populate platform filter with unique platforms
+        // function populatePlatformFilter() {
+        //     const platformFilter = document.getElementByClassName('platformFilter');
+
+        //     // Clear existing options except "All Platforms"
+        //     while (platformFilter.options.length > 1) {
+        //         platformFilter.remove(1);
+        //     }
+
+        //     // Add platform options
+        //     uniquePlatforms.forEach(platform => {
+        //         const option = document.createElement('option');
+        //         option.value = platform.toLowerCase();
+        //         option.textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
+        //         platformFilter.appendChild(option);
+        //     });
+        // }
+
+
+
+
+
+
+        function populatePlatformFilter() {
+            // Get all elements with the 'platformFilter' class
+            const platformFilters = document.getElementsByClassName('platformFiltersall');
+
+            // Loop through each filter element
+            Array.from(platformFilters).forEach(platformFilter => {
+                // Clear existing options except "All Platforms"
+                while (platformFilter.options.length > 1) {
+                    platformFilter.remove(1);
+                }
+
+                // Add platform options
+                uniquePlatforms.forEach(platform => {
+                    const option = document.createElement('option');
+                    option.value = platform.toLowerCase();
+                    option.textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
+                    platformFilter.appendChild(option);
+                });
+            });
+        }
+
+        function applyFilters(value) {
+
+
+
+            let timeRange;
+            let platform;
+
+
+            if (value === "sentiment") {
+
+
+                console.log("inner");
+                timeRange = document.getElementById('timeRangeFilter').value;
+                platform = document.getElementById('platformFilter').value;
+            }
+
+            else if (value === "platformusage") {
+
+                timeRange = document.getElementById('timeRangeFilter2').value;
+                platform = document.getElementById('platformFilter2').value;
+            }
+
+            else if (value === "engagement") {
+
+                timeRange = document.getElementById('timeRangeFilter3').value;
+                platform = document.getElementById('platformFilter3').value;
+            }
+
+
+            else if (value === "platformPostsChart") {
+                timeRange = document.getElementById('timeRangeFilter4').value;
+                platform = document.getElementById('platformFilter4').value;
+
+            }
+
+            else if (value === "engagementRadarChart") {
+                timeRange = document.getElementById('timeRangeFilter5').value;
+                platform = document.getElementById('platformFilter5').value;
+
+            }
+
+            else if (value === "likesVsRetweetsChart") {
+                timeRange = document.getElementById('timeRangeFilter6').value;
+                platform = document.getElementById('platformFilter6').value;
+
+            }
+
+            else if (value === "engagementPlatformChart") {
+                timeRange = document.getElementById('timeRangeFilter7').value;
+                platform = document.getElementById('platformFilter7').value;
+
+            }
+            // const timeRange = document.getElementById('timeRangeFilter').value;
+            // const platform = document.getElementById('platformFilter').value;
+
+            // Start with all data
+            let dateFiltered = [...allData];
+
+
+
+
+
+            // Filter by time range
+            if (timeRange !== 'all') {
+                if (timeRange === 'custom') {
+                    // Custom date range
+                    let startDateStr = 0;
+                    let endDateStr = 0;
+
+                    if (value === "sentiment") {
+                        startDateStr = document.getElementById('startDate').value;
+                        endDateStr = document.getElementById('endDate').value;
+                    }
+                    else if (value === "platformusage") {
+                        startDateStr = document.getElementById('startDate2').value;
+                        endDateStr = document.getElementById('endDate2').value;
+                    }
+
+
+                    else if (value === "engagement") {
+                        startDateStr = document.getElementById('startDate3').value;
+                        endDateStr = document.getElementById('endDate3').value;
+                    }
+
+
+                    else if (value === "platformPostsChart") {
+                        startDateStr = document.getElementById('startDate4').value;
+                        endDateStr = document.getElementById('endDate4').value;
+
+                    }
+
+                    else if (value === "engagementRadarChart") {
+                        startDateStr = document.getElementById('startDate5').value;
+                        endDateStr = document.getElementById('endDate5').value;
+
+                    }
+
+                    else if (value === "likesVsRetweetsChart") {
+                        startDateStr = document.getElementById('startDate6').value;
+                        endDateStr = document.getElementById('endDate6').value;
+
+                    }
+
+                    else if (value === "engagementPlatformChart") {
+                        startDateStr = document.getElementById('startDate7').value;
+                        endDateStr = document.getElementById('endDate7').value;
+
+                    }
+
+                    if (startDateStr && endDateStr) {
+                        const startDate = new Date(startDateStr);
+                        const endDate = new Date(endDateStr);
+                        endDate.setHours(23, 59, 59, 999); // End of the selected day
+
+                        dateFiltered = allData.filter(post => {
+                            const postDate = new Date(post.Timestamp);
+                            return postDate >= startDate && postDate <= endDate;
+                        });
+                    }
+                } else {
+                    // Preset time ranges
+                    const today = new Date();
+                    let startDate;
+
+                    if (timeRange === '7days') {
+                        startDate = new Date(today);
+                        startDate.setDate(today.getDate() - 7);
+                    } else if (timeRange === '30days') {
+                        startDate = new Date(today);
+                        startDate.setDate(today.getDate() - 30);
+                    } else if (timeRange === '90days') {
+                        startDate = new Date(today);
+                        startDate.setDate(today.getDate() - 90);
+                    }
+
+                    dateFiltered = allData.filter(post => {
+                        const postDate = new Date(post.Timestamp);
+                        return postDate >= startDate;
+                    });
+
+
+
+                    console.log(dateFiltered, "dateFiltered")
+                }
+
+
+
+
+            }
+
+            // Filter by platform
+            filteredData = platform !== 'all'
+                ? dateFiltered.filter(post => post.Platform.trim().toLowerCase() === platform.toLowerCase())
+                : dateFiltered;
+
+            // Update charts and metrics
+
+
+
+            if (value === "sentiment") {
+                updateSentimentChart(value);
+            }
+            else if (value === "platformusage") {
+                updatePlatformChart(value);
+            }
+            else if (value === "engagement") {
+                updateEngagementChart(value);
+            }
+
+            else if (value === "platformPostsChart") {
+
+                updatePlatformPostsChart(value);
+
+
+            }
+
+            else if (value === "engagementRadarChart") {
+                updateEngagementRadarChart(value);
+
+            }
+
+            else if (value === "likesVsRetweetsChart") {
+                updateLikesVsRetweetsChart(value);
+
+
+            }
+
+            else if (value === "engagementPlatformChart") {
+                updateEngagementPlatformChart(value);
+
+
+            }
+
+
+
+
+            // updateCharts(value);
+            updateMetrics();
+        }
+
+
+
+
+
+
+
+        // Reset all filters to default
+        function resetFilters(value) {
+
+            if (value === "sentiment") {
+                document.getElementById('timeRangeFilter').value = 'all';
+                document.getElementById('platformFilter').value = 'all';
+                document.getElementById('chartTypeFilter').value = 'default';
+
+                document.getElementById('customDateContainer').style.display = 'none';
+
+                document.getElementById('startDate').value = '';
+                document.getElementById('endDate').value = '';
+
+                filteredData = [...allData];
+
+                updateSentimentChart(value)
+
+            }
+
+
+            else if (value === "platformusage") {
+                document.getElementById('timeRangeFilter2').value = 'all';
+                document.getElementById('platformFilter2').value = 'all';
+                document.getElementById('chartTypeFilter2').value = 'default';
+
+                document.getElementById('customDateContainer2').style.display = 'none';
+
+                document.getElementById('startDate2').value = '';
+                document.getElementById('endDate2').value = '';
+
+                filteredData = [...allData];
+
+                updatePlatformChart(value)
+
+            }
+
+
+            else if (value === "engagement") {
+                document.getElementById('timeRangeFilter3').value = 'all';
+                document.getElementById('platformFilter3').value = 'all';
+                document.getElementById('chartTypeFilter3').value = 'default';
+
+                document.getElementById('customDateContainer3').style.display = 'none';
+
+                document.getElementById('startDate3').value = '';
+                document.getElementById('endDate3').value = '';
+
+                filteredData = [...allData];
+
+                updateEngagementChart(value)
+
+            }
+
+            else if (value === "platformPostsChart") {
+
+                document.getElementById('timeRangeFilter4').value = 'all';
+                document.getElementById('platformFilter4').value = 'all';
+                document.getElementById('chartTypeFilter4').value = 'default';
+
+                document.getElementById('customDateContainer4').style.display = 'none';
+
+                document.getElementById('startDate4').value = '';
+                document.getElementById('endDate4').value = '';
+
+                filteredData = [...allData];
+
+
+                updatePlatformPostsChart(value);
+
+
+            }
+
+            else if (value === "engagementRadarChart") {
+
+                document.getElementById('timeRangeFilter5').value = 'all';
+                document.getElementById('platformFilter5').value = 'all';
+                document.getElementById('chartTypeFilter5').value = 'default';
+
+                document.getElementById('customDateContainer5').style.display = 'none';
+                document.getElementById('startDate5').value = '';
+                document.getElementById('endDate5').value = '';
+
+                filteredData = [...allData];
+
+                updateEngagementRadarChart(value);
+
+            }
+
+            else if (value === "likesVsRetweetsChart") {
+
+                document.getElementById('timeRangeFilter6').value = 'all';
+                document.getElementById('platformFilter6').value = 'all';
+                document.getElementById('chartTypeFilter6').value = 'default';
+
+                document.getElementById('customDateContainer6').style.display = 'none';
+
+                document.getElementById('startDate6').value = '';
+                document.getElementById('endDate6').value = '';
+
+                filteredData = [...allData];
+
+                updateLikesVsRetweetsChart(value);
+
+
+            }
+
+            else if (value === "engagementPlatformChart") {
+
+                document.getElementById('timeRangeFilter7').value = 'all';
+                document.getElementById('platformFilter7').value = 'all';
+                document.getElementById('chartTypeFilter7').value = 'default';
+
+                document.getElementById('customDateContainer7').style.display = 'none';
+
+                document.getElementById('startDate7').value = '';
+                document.getElementById('endDate7').value = '';
+
+                filteredData = [...allData];
+
+                updateEngagementPlatformChart(value);
+
+
+            }
+
+            updateMetrics();
+        }
+
+
+
+
+        // Update metrics
+
+
+
+        function updateMetrics() {
+            let totalLikes = 0;
+            let totalRetweets = 0;
+
+            filteredData.forEach(post => {
+                totalLikes += post.Likes;
+                totalRetweets += post.Retweets;
+            });
+
+            document.getElementById('totalPosts').innerHTML =
+                '<i class="bi bi-file-earmark-text" style="font-size: 30px; color: #6c5ce7;"></i> <br/> Total Posts: ' + formatNumber(filteredData.length);
+
+            document.getElementById('totalLikes').innerHTML =
+                '<i class="bi bi-heart" style="font-size: 30px; color: #FF6347;"></i> <br/>  Total Likes: ' + formatNumber(totalLikes);
+
+            document.getElementById('totalRetweets').innerHTML =
+                '<i class="bi bi-arrow-repeat" style="font-size: 30px; color: #36A2EB;"></i>  <br/>  Total Retweets: ' + formatNumber(totalRetweets);
+        }
+
+        // Update all charts with filtered data
+        function updateCharts(val) {
+
+            updateSentimentChart(val);
+
+
+
+            updatePlatformChart(val);
+
+            updateEngagementChart(val);
+            updatePlatformPostsChart(val);
+            updateEngagementRadarChart(val);
+            updateLikesVsRetweetsChart(val);
+            updateEngagementPlatformChart(val);
+        }
+
+        // Update Sentiment Distribution Chart
+        function updateSentimentChart(val) {
+            const sentiments = { Positive: 0, Negative: 0, Neutral: 0 };
+
+            filteredData.forEach(post => {
+                sentiments[post.Sentiment] = (sentiments[post.Sentiment] || 0) + 1;
+            });
+
+            const sentimentData = {
+                labels: Object.keys(sentiments),
+                datasets: [{
+                    data: Object.values(sentiments),
+                    backgroundColor: ["#4CAF50", "#FF6347", "#FFC107"]
+                }]
+            };
+
+
+
+
+            if (val) {
+
+                console.log("in if ", val)
+
+                chartInstances.sentimentChart.destroy();
+                const ctx = document.getElementById("sentimentChart").getContext("2d");
+                chartInstances.sentimentChart = new Chart(ctx, {
+                    type: "pie",
+                    data: sentimentData,
+                    options: getChartOptions('pie')
+                });
+            }
+            else if (chartInstances.sentimentChart) {
+                chartInstances.sentimentChart.data = sentimentData;
+                chartInstances.sentimentChart.update();
+            } else {
+                const ctx = document.getElementById("sentimentChart").getContext("2d");
+                chartInstances.sentimentChart = new Chart(ctx, {
+                    type: "pie",
+                    data: sentimentData,
+                    options: getChartOptions('pie')
+                });
+            }
+        }
+
+
+
+
+
+        // Update Platform Usage Chart
+        function updatePlatformChart(val) {
+            const platforms = {};
+
+            filteredData.forEach(post => {
+                const platform = post.Platform.trim().toLowerCase();
+                platforms[platform] = (platforms[platform] || 0) + 1;
+            });
+
+            const platformData = {
+                labels: Object.keys(platforms).map(p => p.charAt(0).toUpperCase() + p.slice(1)),
+                datasets: [{
+                    data: Object.values(platforms),
+                    backgroundColor: generateColors(Object.keys(platforms).length)
+                }]
+            };
+
+
+
+
+            if (val) {
+
+
+
+                chartInstances.platformChart.destroy();
+
+                const ctx = document.getElementById("platformChart").getContext("2d");
+                chartInstances.platformChart = new Chart(ctx, {
+                    type: "pie",
+                    data: platformData,
+                    options: getChartOptions('pie')
+                });
+            }
+
+
+            else if (chartInstances.platformChart) {
+                chartInstances.platformChart.data = platformData;
+                chartInstances.platformChart.update();
+            }
+            else {
+                const ctx = document.getElementById("platformChart").getContext("2d");
+                chartInstances.platformChart = new Chart(ctx, {
+                    type: "pie",
+                    data: platformData,
+                    options: getChartOptions('pie')
+                });
+
+            }
+        }
+
+
+
+
+
+        // Update Engagement Over Time Chart
+        function updateEngagementChart(val) {
+            // Sort data by date
+            const sortedData = [...filteredData].sort((a, b) =>
+                new Date(a.Timestamp.split(' ')[0]) - new Date(b.Timestamp.split(' ')[0])
+            );
+
+            // Group by date
+            const engagementByDate = {};
+
+            sortedData.forEach(post => {
+                const date = post.Timestamp.split(' ')[0];
+                if (!engagementByDate[date]) {
+                    engagementByDate[date] = { likes: 0, retweets: 0 };
+                }
+                engagementByDate[date].likes += post.Likes;
+                engagementByDate[date].retweets += post.Retweets;
+            });
+
+            const engagementDates = Object.keys(engagementByDate);
+            const likesData = engagementDates.map(date => engagementByDate[date].likes);
+            const retweetsData = engagementDates.map(date => engagementByDate[date].retweets);
+
+            const engagementData = {
+                labels: engagementDates,
+                datasets: [
+                    {
+                        label: "Likes",
+                        data: likesData,
+                        borderColor: "#FF6384",
+                        backgroundColor: "rgba(255, 99, 132, 0.2)",
+                        fill: false,
+                        order: 2,
+                    },
+                    {
+                        label: "Retweets",
+                        data: retweetsData,
+                        borderColor: "#36A2EB",
+                        backgroundColor: "rgba(54, 162, 235, 0.2)",
+                        fill: false,
+                        order: 1,
+                    }
+                ]
+            };
+
+
+
+            if (val) {
+                chartInstances.engagementChart.destroy();
+
+                const ctx = document.getElementById("engagementChart").getContext("2d");
+                chartInstances.engagementChart = new Chart(ctx, {
+                    type: "line",
+                    data: engagementData,
+                    options: getChartOptions('line')
+                });
+            }
+            else if (chartInstances.engagementChart) {
+                chartInstances.engagementChart.data = engagementData;
+                chartInstances.engagementChart.update();
+            } else {
+                const ctx = document.getElementById("engagementChart").getContext("2d");
+                chartInstances.engagementChart = new Chart(ctx, {
+                    type: "line",
+                    data: engagementData,
+                    options: getChartOptions('line')
+                });
+            }
+        }
+
+        // Update other chart functions similarly
+        function updatePlatformPostsChart(val) {
+            const platformPosts = {};
+
+            filteredData.forEach(post => {
+                const platform = post.Platform.trim().toLowerCase();
+                platformPosts[platform] = (platformPosts[platform] || 0) + 1;
+            });
+
+            const platformPostsData = {
+                labels: Object.keys(platformPosts).map(p => p.charAt(0).toUpperCase() + p.slice(1)),
+                datasets: [{
+                    label: 'Total Posts',
+                    data: Object.values(platformPosts),
+                    backgroundColor: "#6c5ce7",
+                    borderColor: "#4c3b8f",
+                    borderWidth: 1
+                }]
+            };
+
+            if (val) {
+                chartInstances.platformPostsChart.destroy();
+
+                const ctx = document.getElementById("platformPostsChart").getContext("2d");
+                chartInstances.platformPostsChart = new Chart(ctx, {
+                    type: "bar",
+                    data: platformPostsData,
+                    options: getChartOptions('bar')
+                });
+            }
+
+            else if (chartInstances.platformPostsChart) {
+                chartInstances.platformPostsChart.data = platformPostsData;
+                chartInstances.platformPostsChart.update();
+            } else {
+                const ctx = document.getElementById("platformPostsChart").getContext("2d");
+                chartInstances.platformPostsChart = new Chart(ctx, {
+                    type: "bar",
+                    data: platformPostsData,
+                    options: getChartOptions('bar')
+                });
+            }
+        }
+
+
+
+        // Update Engagement Radar Chart
+        function updateEngagementRadarChart(val) {
+            let totalLikes = 0;
+            let totalRetweets = 0;
+
+            filteredData.forEach(post => {
+                totalLikes += post.Likes;
+                totalRetweets += post.Retweets;
+            });
+
+            // Calculate estimated values for other metrics based on filtered data
+            const shareEstimate = Math.round(totalLikes * 0.3);
+            const commentEstimate = Math.round(totalLikes * 0.15);
+            const mentionEstimate = Math.round(totalRetweets * 0.4);
+
+            const engagementRadarData = {
+                labels: ["Likes", "Retweets", "Shares", "Comments", "Mentions"],
+                datasets: [{
+                    label: "Engagement",
+                    data: [totalLikes, totalRetweets, shareEstimate, commentEstimate, mentionEstimate],
+                    backgroundColor: "rgba(108, 92, 247, 0.2)",
+                    borderColor: "#6c5ce7",
+                    borderWidth: 2
+                }]
+            };
+
+
+            if (val) {
+                chartInstances.engagementRadarChart.destroy();
+
+                const ctx = document.getElementById("engagementRadarChart").getContext("2d");
+                chartInstances.engagementRadarChart = new Chart(ctx, {
+                    type: "radar",
+                    data: engagementRadarData,
+                    options: getChartOptions('radar')
+                });
+            }
+
+            else if (chartInstances.engagementRadarChart) {
+                chartInstances.engagementRadarChart.data = engagementRadarData;
+                chartInstances.engagementRadarChart.update();
+            } else {
+                const ctx = document.getElementById("engagementRadarChart").getContext("2d");
+                chartInstances.engagementRadarChart = new Chart(ctx, {
+                    type: "radar",
+                    data: engagementRadarData,
+                    options: getChartOptions('radar')
+                });
+            }
+        }
+
+        // Update Likes vs Retweets Chart
+        function updateLikesVsRetweetsChart(val) {
+            // Sort data by date
+            const sortedData = [...filteredData].sort((a, b) =>
+                new Date(a.Timestamp.split(' ')[0]) - new Date(b.Timestamp.split(' ')[0])
+            );
+
+            // Group by date
+            const engagementByDate = {};
+
+            sortedData.forEach(post => {
+                const date = post.Timestamp.split(' ')[0];
+                if (!engagementByDate[date]) {
+                    engagementByDate[date] = { likes: 0, retweets: 0 };
+                }
+                engagementByDate[date].likes += post.Likes;
+                engagementByDate[date].retweets += post.Retweets;
+            });
+
+            const engagementDates = Object.keys(engagementByDate);
+            const likesData = engagementDates.map(date => engagementByDate[date].likes);
+            const retweetsData = engagementDates.map(date => engagementByDate[date].retweets);
+
+            const likesVsRetweetsData = {
+                labels: engagementDates,
+                datasets: [
+                    {
+                        label: "Likes",
+                        data: likesData,
+                        borderColor: "#FF6384",
+                        backgroundColor: "rgba(255, 99, 132, 0.2)",
+                        borderWidth: 1,
+                        order: 2,
+                    },
+                    {
+                        label: "Retweets",
+                        data: retweetsData,
+                        borderColor: "#36A2EB",
+                        backgroundColor: "rgba(54, 162, 235, 0.2)",
+                        borderWidth: 1,
+                        order: 1,
+                    }
+                ]
+            };
+
+
+
+            if (val) {
+                chartInstances.likesVsRetweetsChart.destroy();
+
+                const ctx = document.getElementById("likesVsRetweetsChart").getContext("2d");
+                chartInstances.likesVsRetweetsChart = new Chart(ctx, {
+                    type: "line",
+                    data: likesVsRetweetsData,
+                    options: getChartOptions('line')
+                });
+            }
+            else if (chartInstances.likesVsRetweetsChart) {
+                chartInstances.likesVsRetweetsChart.data = likesVsRetweetsData;
+                chartInstances.likesVsRetweetsChart.update();
+            } else {
+                const ctx = document.getElementById("likesVsRetweetsChart").getContext("2d");
+                chartInstances.likesVsRetweetsChart = new Chart(ctx, {
+                    type: "line",
+                    data: likesVsRetweetsData,
+                    options: getChartOptions('line')
+                });
+            }
+        }
+
+        // Update Engagement per Platform Chart
+        function updateEngagementPlatformChart(val) {
+            // Group by platform
+            const engagementByPlatform = {};
+
+            filteredData.forEach(post => {
+                const platform = post.Platform.trim().toLowerCase();
+                if (!engagementByPlatform[platform]) {
+                    engagementByPlatform[platform] = { likes: 0, retweets: 0 };
+                }
+                engagementByPlatform[platform].likes += post.Likes;
+                engagementByPlatform[platform].retweets += post.Retweets;
+            });
+
+            const platforms = Object.keys(engagementByPlatform);
+            const likesData = platforms.map(platform => engagementByPlatform[platform].likes);
+            const retweetsData = platforms.map(platform => engagementByPlatform[platform].retweets);
+
+            const engagementPlatformData = {
+                labels: platforms.map(p => p.charAt(0).toUpperCase() + p.slice(1)),
+                datasets: [
+                    {
+                        label: "Likes",
+                        data: likesData,
+                        backgroundColor: "#FF6384",
+                    },
+                    {
+                        label: "Retweets",
+                        data: retweetsData,
+                        backgroundColor: "#36A2EB",
+                    }
+                ]
+            };
+
+
+
+            if (val) {
+                chartInstances.engagementPlatformChart.destroy();
+
+
+                const ctx = document.getElementById("engagementPlatformChart").getContext("2d");
+                chartInstances.engagementPlatformChart = new Chart(ctx, {
+                    type: "bar",
+                    data: engagementPlatformData,
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                type: "logarithmic",
+                                ticks: {
+                                    callback: function (value) {
+                                        return formatNumber(value);
+                                    }
+                                }
+                            },
+                            x: { stacked: false }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== undefined) {
+                                            label += formatNumber(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+
+            }
+            else if (chartInstances.engagementPlatformChart) {
+                chartInstances.engagementPlatformChart.data = engagementPlatformData;
+                chartInstances.engagementPlatformChart.update();
+            } else {
+                const ctx = document.getElementById("engagementPlatformChart").getContext("2d");
+                chartInstances.engagementPlatformChart = new Chart(ctx, {
+                    type: "bar",
+                    data: engagementPlatformData,
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                type: "logarithmic",
+                                ticks: {
+                                    callback: function (value) {
+                                        return formatNumber(value);
+                                    }
+                                }
+                            },
+                            x: { stacked: false }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== undefined) {
+                                            label += formatNumber(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+
+
+
+            }
+        }
+
+        // Apply chart type changes
+        function applyChartType(value) {
+
+
+            let chartType = 0;
+            if (value === "sentiment") {
+
+                chartType = document.getElementById('chartTypeFilter').value;
+            }
+
+            else if (value === "platformusage") {
+                chartType = document.getElementById('chartTypeFilter2').value;
+
+
+            }
+
+            else if (value === "engagement") {
+                chartType = document.getElementById('chartTypeFilter3').value;
+
+
+            }
+
+            else if (value === "platformPostsChart") {
+
+                chartType = document.getElementById('chartTypeFilter4').value;
+
+
+            }
+
+            else if (value === "engagementRadarChart") {
+                chartType = document.getElementById('chartTypeFilter5').value;
+
+            }
+
+            else if (value === "likesVsRetweetsChart") {
+                chartType = document.getElementById('chartTypeFilter6').value;
+
+
+            }
+
+            else if (value === "engagementPlatformChart") {
+                chartType = document.getElementById('chartTypeFilter7').value;
+
+
+            }
+
+            // Update chart types
+            if (chartType !== 'default') {
+                // For each chart that can change type
+
+                let chartsToUpdate;
+
+                if (value === "sentiment") {
+
+                    // chartsToUpdate = ['sentimentChart', 'engagementChart', 'platformChart', 'engagementRadarChart', 'platformPostsChart', 'likesVsRetweetsChart', 'engagementPlatformChart'];
+                    chartsToUpdate = ['sentimentChart'];
+
+                }
+
+                else if (value === "platformusage") {
+                    chartsToUpdate = ['platformChart'];
+
+
+                }
+
+                else if (value === "engagement") {
+                    chartsToUpdate = ['engagementChart'];
+                }
+
+                else if (value === "platformPostsChart") {
+
+                    chartsToUpdate = ['platformPostsChart'];
+
+
+                }
+
+                else if (value === "engagementRadarChart") {
+
+                    chartsToUpdate = ['engagementRadarChart'];
+
+                }
+
+                else if (value === "likesVsRetweetsChart") {
+                    chartsToUpdate = ['likesVsRetweetsChart'];
+
+
+                }
+
+                else if (value === "engagementPlatformChart") {
+                    chartsToUpdate = ['engagementPlatformChart'];
+
+
+                }
+
+                chartsToUpdate.forEach(chartId => {
+                    if (chartInstances[chartId]) {
+                        // Special case for pie charts
+                        if (chartType === 'pie' && chartInstances[chartId].config.type !== 'pie') {
+                            // Simplify datasets for pie chart (can only have one dataset)
+                            const simplifiedData = {
+                                labels: chartInstances[chartId].data.labels,
+                                datasets: [{
+                                    data: chartInstances[chartId].data.datasets[0].data,
+                                    backgroundColor: generateColors(chartInstances[chartId].data.labels.length)
+                                }]
+                            };
+
+                            // Destroy the old chart
+                            chartInstances[chartId].destroy();
+
+                            // Create a new pie chart
+                            const ctx = document.getElementById(chartId).getContext('2d');
+                            chartInstances[chartId] = new Chart(ctx, {
+                                type: 'pie',
+                                data: simplifiedData,
+                                options: getChartOptions('pie')
+                            });
+                        }
+                        // For other chart types
+                        else if (chartType !== 'pie' && chartInstances[chartId].config.type !== chartType) {
+                            // Preserve the data but change the chart type
+                            chartInstances[chartId].config.type = chartType;
+                            chartInstances[chartId].options = getChartOptions(chartType);
+                            chartInstances[chartId].update();
+                        }
+                    }
+                });
+            } else {
+                // Reset to default chart types
+
+
+                // updateCharts("alldefault");
+
+
+                if (value === "sentiment") {
+
+                    // chartsToUpdate = ['sentimentChart', 'engagementChart', 'platformChart', 'engagementRadarChart', 'platformPostsChart', 'likesVsRetweetsChart', 'engagementPlatformChart'];
+                    updateSentimentChart(value)
+                }
+
+                else if (value === "platformusage") {
+                    updatePlatformChart(value);
+
+                }
+
+                else if (value === "engagement") {
+                    updateEngagementChart(value)
+                }
+
+                else if (value === "platformPostsChart") {
+
+                    updatePlatformPostsChart(value)
+
+
+
+                }
+
+                else if (value === "engagementRadarChart") {
+
+                    updateEngagementRadarChart(value)
+
+                }
+
+                else if (value === "likesVsRetweetsChart") {
+                    updateLikesVsRetweetsChart(value)
+
+
+                }
+
+                else if (value === "engagementPlatformChart") {
+                    updateEngagementPlatformChart(value)
+
+
+                }
+
+            }
+        }
+
+
+
+
+
+        // Generate random colors for charts
+        function generateColors(count) {
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                const hue = (i * 137) % 360; // Golden angle approximation for evenly distributed colors
+                colors.push(`hsl(${hue}, 70%, 60%)`);
+            }
+            return colors;
+        }
+
+        // Get chart options with tooltips
+        function getChartOptions(chartType) {
+            const baseOptions = {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== undefined) {
+                                    label += formatNumber(context.parsed.y);
+                                } else if (context.parsed !== undefined) {
+                                    label += formatNumber(context.parsed);
+                                }
+                                return label;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            };
+
+            // Add chart-specific options
+            if (chartType === 'bar') {
+                baseOptions.scales = {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return formatNumber(value);
+                            }
+                        }
+                    }
+                };
+            } else if (chartType === 'line') {
+                baseOptions.elements = {
+                    line: {
+                        tension: 0.2 // Smooth curves
+                    },
+                    point: {
+                        radius: 3,
+                        hoverRadius: 5
+                    }
+                };
+            }
+
+            return baseOptions;
+        }
+    </script>
+    <script>
+
+        function showChart(chartId) {
+            const searchInput = chartId.toLowerCase();
+            document.querySelectorAll('.metric, .chart-container').forEach(element => {
+                const text = element.textContent.toLowerCase();
+                element.style.display = text.includes(searchInput) ? 'block' : 'none';
+            });
+        }
+
+
+
+        function searchMetrics() {
+            const searchInput = document.getElementById("searchInput").value.toLowerCase();
+            document.querySelectorAll('.metric, .chart-container').forEach(element => {
+                const text = element.textContent.toLowerCase();
+                element.style.display = text.includes(searchInput) ? 'block' : 'none';
+            });
+        }
+
+        document.getElementById("loader-overlay").style.display = "flex";
+        document.body.classList.add("no-scroll");
+
+        // Initialize filters
+        initializeFilters();
+
+        fetch('data.json')
+            .then(response => response.json())
+            .then(data => {
+                // Store all data globally
+                allData = data;
+                filteredData = data;
+
+                // Process platforms
+                uniquePlatforms = [...new Set(data.map(post => post.Platform.trim().toLowerCase()))];
+
+                // Populate platform filter
+                populatePlatformFilter();
+
+                // Calculate metrics
+                updateMetrics();
+
+                // Initialize all charts
+                updateCharts();
+
+                // Hide loader
+                document.getElementById("loader-overlay").style.display = "none";
+                document.body.classList.remove("no-scroll");
+            })
+            .catch(error => {
+                console.error("Error loading data:", error);
+                document.getElementById("loader-overlay").style.display = "none";
+                document.body.classList.remove("no-scroll");
+                alert("Error loading data. Please try refreshing the page.");
+            });
+
+
+
+
+
+
+
+    </script>
+
+
+    <script>
+        // Format numbers for better readability
+        function formatNumber(num) {
+            if (num === null || num === undefined) return '0';
+
+            // Convert to number if it's a string
+            num = typeof num === 'string' ? parseFloat(num) : num;
+
+            if (isNaN(num)) return '0';
+
+            if (num >= 1e9) return (num / 1e9).toFixed(1) + "B";  // Billion
+            if (num >= 1e6) return (num / 1e6).toFixed(1) + "M";  // Million
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + "K";  // Thousand
+
+            // For small numbers, just return the number with up to 1 decimal place
+            return typeof num === 'number' ? num.toFixed(1).replace(/\.0$/, '') : num;
+        }
+    </script>
+
+
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const user = localStorage.getItem("user");
+            if (!user) {
+                window.location.href = "/"; // Redirect to login page if not logged in
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem("user");
+            window.location.href = "/"; // Redirect to login page after logout
+        }
+
+    </script>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+        crossorigin="anonymous"></script>
+
+    <script>
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    </script>
+</body>
+
+</html>

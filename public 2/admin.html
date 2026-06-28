@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f0f2f5;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(90deg, #4B0082, #6A0DAD); 
+            color: white;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand,
+        .nav-link {
+            color: white !important;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+      
+
+        .container {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .table-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .table-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+        }
+
+        .table {
+            margin-bottom: 0;
+            vertical-align: middle;
+        }
+
+        .table thead th {
+            background: linear-gradient(90deg, #4B0082, #6A0DAD); 
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 1rem;
+            border: none;
+        }
+
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9ff !important;
+            transform: scale(1.01);
+        }
+
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-color: #f0f2f5;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #4B0082, #6A0DAD); 
+            border: none;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+       
+        .modal-content {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            background: linear-gradient(90deg, #4B0082, #6A0DAD); 
+            color: white;
+            border-radius: 16px 16px 0 0;
+            border: none;
+        }
+
+        .modal-title {
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+        .form-control {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .table tbody tr {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-graph-up me-2"></i>
+                Social Media Analysis
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link active" href="/da">Dashboard</a></li>
+                </ul> -->
+                <button onclick="logout()" class="btn ms-auto  btn-danger">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="table-container animate__animated animate__fadeIn">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="page-title">
+                    <i class="bi bi-people-fill me-2"></i>Manage Users
+                </h2>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal">
+                    <i class="bi bi-plus-lg me-2"></i>Add User
+                </button>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    <!-- Users will be dynamically added here -->
+                </tbody>
+            </table>
+            <div id="emptyState" class="empty-state d-none">
+                <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+                <p class="mt-3">No users found. Add some users to get started!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">
+                        <i class="bi bi-person-plus-fill me-2"></i>Add New User
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUserForm">
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="nameField" placeholder="Full Name" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control" id="emailField" placeholder="Email" required>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control" id="passwordField" placeholder="Password"
+                                    required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-plus-circle me-2"></i>Add User
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const user = JSON.parse(localStorage.getItem("user"));
+            if (!user || user.type !== "admin") {
+                window.location.href = "/";
+            }
+            loadUsers();
+        });
+
+        async function loadUsers() {
+            try {
+                const res = await fetch("/users");
+                const users = await res.json();
+                const tableBody = document.getElementById("userTableBody");
+                const emptyState = document.getElementById("emptyState");
+
+                tableBody.innerHTML = "";
+
+                if (users.length === 0) {
+                    emptyState.classList.remove("d-none");
+                } else {
+                    emptyState.classList.add("d-none");
+                    users.forEach((user, index) => {
+                        setTimeout(() => {
+                            addUserToTable(user.name, user.email, user.id);
+                        }, index * 100); // Stagger animation
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching users:", error);
+                showToast("Error loading users", "danger");
+            }
+        }
+
+        document.getElementById("addUserForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("nameField").value;
+            const email = document.getElementById("emailField").value;
+            const password = document.getElementById("passwordField").value;
+
+            try {
+                const res = await fetch("/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email, password }),
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast(data.message, "success");
+                    document.getElementById("addUserForm").reset();
+                    addUserToTable(name, email, data.user.id);
+                    bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
+                } else {
+                    showToast(data.error, "danger");
+                }
+            } catch (error) {
+                showToast("Something went wrong!", "danger");
+                console.error(error);
+            }
+        });
+
+        function addUserToTable(name, email, id) {
+            const tableBody = document.getElementById("userTableBody");
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-circle me-3">
+                            ${getInitials(name)}
+                        </div>
+                        ${name}
+                    </div>
+                </td>
+                <td>${email}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="removeUser(${id}, this)">
+                        <i class="bi bi-trash me-1"></i>Remove
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        }
+
+        function getInitials(name) {
+            return name
+                .split(' ')
+                .map(word => word[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+        }
+
+        async function removeUser(id, button) {
+            if (confirm("Are you sure you want to delete this user?")) {
+                try {
+                    const res = await fetch(`/users/${id}`, {
+                        method: "DELETE",
+                    });
+
+                    const data = await res.json();
+                    if (res.ok) {
+                        const row = button.closest("tr");
+                        row.style.animation = "fadeOut 0.5s ease forwards";
+                        setTimeout(() => {
+                            row.remove();
+                            showToast(data.message, "success");
+                            if (document.getElementById("userTableBody").children.length === 0) {
+                                document.getElementById("emptyState").classList.remove("d-none");
+                            }
+                        }, 500);
+                    } else {
+                        showToast(data.error, "danger");
+                    }
+                } catch (error) {
+                    console.error("Error deleting user:", error);
+                    showToast("Error deleting user", "danger");
+                }
+            }
+        }
+
+        function showToast(message, type) {
+            const toastContainer = document.createElement("div");
+            toastContainer.style.position = "fixed";
+            toastContainer.style.top = "20px";
+            toastContainer.style.right = "20px";
+            toastContainer.style.zIndex = "1050";
+
+            toastContainer.innerHTML = `
+                <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(toastContainer);
+            const toast = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+            toast.show();
+
+            toast._element.addEventListener('hidden.bs.toast', () => {
+                toastContainer.remove();
+            });
+        }
+
+        function logout() {
+
+            localStorage.removeItem("user");
+            window.location.href = "/";
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
